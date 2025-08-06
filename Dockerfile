@@ -22,18 +22,21 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Crear directorio de trabajo
 WORKDIR /var/www
 
-# Copiar archivos al contenedor
+# Copiar archivos del proyecto al contenedor
 COPY . .
 
 # Instalar dependencias PHP sin dev
 RUN composer install --no-dev --optimize-autoloader
 
-# Ajustar permisos para storage y cache
+# Ajustar permisos
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
-# Exponer el puerto PHP-FPM
-EXPOSE 9000
+# Copiar script de inicio
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-# Comando para iniciar PHP-FPM
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=10000"]
+# Exponer puerto de Laravel
+EXPOSE 10000
 
+# Usar el script como comando de inicio
+CMD ["/entrypoint.sh"]
